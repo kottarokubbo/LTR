@@ -1,13 +1,13 @@
 import streamlit as st
 import pandas as pd
 import matplotlib.pyplot as plt
-import japanize_matplotlib
+from matplotlib import rcParams
 from datetime import datetime, timedelta
 import re
 
 # 日本語フォント設定
-plt.rcParams['font.family'] = 'IPAexGothic'
-plt.rcParams['axes.unicode_minus'] = False
+rcParams['font.family'] = 'IPAexGothic'
+rcParams['axes.unicode_minus'] = False
 
 # カラーマップの定義
 shared_cmap = plt.cm.tab10.colors
