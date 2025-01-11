@@ -1,0 +1,4 @@
+matplotlib
+streamlit
+pandas
+japanize-matplotlib
