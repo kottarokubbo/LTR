@@ -150,8 +150,8 @@ if uploaded_file is not None:
 
     # 任意期間フィルタ
     st.subheader("任意期間のデータ分析")
-    start_date = st.date_input("開始日を選択", value=datetime(2024, 1, 1))
-    end_date = st.date_input("終了日を選択", value=datetime(2024, 12, 31))
+    start_date = st.date_input("開始日を選択", value=datetime(2024, 12, 1))
+    end_date = st.date_input("終了日を選択", value=datetime(2025, 12, 31))
     period_start = pd.Timestamp(start_date)
     period_end = pd.Timestamp(end_date)
     df_period = df[(df['Start Date'] >= period_start) & (df['Start Date'] <= period_end)]
