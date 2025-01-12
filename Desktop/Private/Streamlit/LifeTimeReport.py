@@ -41,11 +41,20 @@ def extract_start_date(date_str):
     start_dt, _ = extract_times(date_str)
     return start_dt
 
+# デフォルトのCSVファイルを指定
+DEFAULT_CSV_PATH = "LifeTimeReport.csv"  # デフォルトのCSVファイルを配置するパス
+
 # データアップロード
-st.title("データ分析アプリ")
-uploaded_file = st.file_uploader("CSV ファイルをアップロードしてください", type="csv")
+st.title("LTR Analyzer")
+uploaded_file = st.file_uploader("Upload Your LTR(.csv)", type="csv")
+
+# データの読み込み
 if uploaded_file is not None:
     df = pd.read_csv(uploaded_file)
+    st.write("アップロードされたCSVファイルを使用しています。")
+else:
+    df = pd.read_csv(DEFAULT_CSV_PATH)
+    st.write("デフォルトのCSVファイルを使用しています。")
     
     # データ処理
     df['Duration (Min)'] = df['Date'].apply(calc_duration)
@@ -82,9 +91,10 @@ if uploaded_file is not None:
 
     fig, ax = plt.subplots(figsize=(10, 5))
     ax.plot(weekly_total['Week Start'], weekly_total['Recording Ratio (%)'], marker='o', linestyle='-', color=shared_cmap[0])
-    ax.set_title("週ごとの記録割合の推移")
-    ax.set_xlabel("週の開始日")
-    ax.set_ylabel("記録割合 (%)")
+    ax.set_title("Weekly Record Percentage Trend")
+    ax.set_xlabel("Week Start Date")
+    ax.set_ylabel("Record Percentage (%)")
+    
     plt.xticks(rotation=45)
     st.pyplot(fig)
 
@@ -105,14 +115,15 @@ if uploaded_file is not None:
     formatted_dates = top_tags_data.index.strftime('%Y/%m/%d')  # yyyy/mm/dd形式に変換
     ax.set_xticks(range(len(formatted_dates)))  # インデックスの範囲に設定
     ax.set_xticklabels(formatted_dates, rotation=45, ha="right")  # ラベルを設定
-    ax.set_title("主要タグの週次記録推移（積み上げグラフ）")
-    ax.set_xlabel("週の開始日")
-    ax.set_ylabel("記録時間 (分)")
+    ax.set_title("Weekly Trend of Major Tags")
+    ax.set_xlabel("Week Start Date")
+    ax.set_ylabel("Recorded Time (minutes)")
+
     plt.tight_layout()
     st.pyplot(fig)
 
     # (3) 上位プロジェクトの週次推移（積み上げグラフ）
-    st.subheader("3. 上位プロジェクトの週次推移（積み上げグラフ）")
+    st.subheader("3. 上位プロジェクトの週次推移")
     top_projects = weekly_project.groupby('Project')['Total Duration (Min)'].sum().nlargest(8).index
     top_projects_data = weekly_project[weekly_project['Project'].isin(top_projects)].pivot(index='Week Start', columns='Project', values='Total Duration (Min)').fillna(0)
     
@@ -130,9 +141,9 @@ if uploaded_file is not None:
     ax.set_xticks(range(len(formatted_dates)))  # インデックスの範囲に設定
     ax.set_xticklabels(formatted_dates, rotation=45, ha="right")  # ラベルを設定
     # グラフタイトルとラベル設定
-    ax.set_title("主要プロジェクトの週次記録推移（積み上げグラフ）")
-    ax.set_xlabel("週の開始日")
-    ax.set_ylabel("記録時間 (分)")
+    ax.set_title("Weekly Trend of Major Projects")
+    ax.set_xlabel("Week Start Date")
+    ax.set_ylabel("Recorded Time (minutes)")
     # レジェンドをグラフ外に配置
     handles, labels = ax.get_legend_handles_labels()
     fig.legend(
@@ -153,7 +164,7 @@ if uploaded_file is not None:
     df_period = df[(df['Start Date'] >= period_start) & (df['Start Date'] <= period_end)]
 
     # (4) タグ別棒グラフ
-    st.subheader("4. タグ別棒グラフ（分数と割合を表示）")
+    st.subheader("4. タグ別棒グラフ")
     df_tags = df_period[['Tag List', 'Duration (Min)']].explode('Tag List')
     tag_duration_sum = df_tags.groupby('Tag List')['Duration (Min)'].sum().reset_index()
     tag_duration_sum_sorted = tag_duration_sum.sort_values('Duration (Min)', ascending=False).head(15)
@@ -166,10 +177,10 @@ if uploaded_file is not None:
     bars = ax.bar(tag_duration_sum_sorted['Tag List'], tag_duration_sum_sorted['Duration (Min)'], color=shared_cmap[:len(tag_duration_sum_sorted)])
     for bar, duration in zip(bars, tag_duration_sum_sorted['Duration (Min)']):
         percentage = (duration / total_recorded_duration) * 100
-        ax.text(bar.get_x() + bar.get_width() / 2, bar.get_height() + 10, f"{duration:.0f}分\n({percentage:.1f}%)", ha='center', fontsize=9)
-    ax.set_title(f"タグ別記録時間の合計 {start_date}〜{end_date}")
-    ax.set_xlabel("タグ")
-    ax.set_ylabel("記録時間 (分)")
+        ax.text(bar.get_x() + bar.get_width() / 2, bar.get_height() + 10, f"{duration:.0f}Min\n({percentage:.1f}%)", ha='center', fontsize=9)
+    ax.set_title(f"Total Recorded Time by Tag ({start_date}-{end_date})")
+    ax.set_xlabel("Tag")
+    ax.set_ylabel("Recorded Time (minutes)")
     plt.xticks(rotation=45)
     st.pyplot(fig)
 
@@ -186,13 +197,13 @@ if uploaded_file is not None:
     bars = ax.barh(project_duration_sum_sorted['Project List'], project_duration_sum_sorted['Duration (Min)'], color=shared_cmap_large[:len(project_duration_sum_sorted)])
     for bar, duration in zip(bars, project_duration_sum_sorted['Duration (Min)']):
         percentage = (duration / total_recorded_duration) * 100
-        ax.text(bar.get_width() + 50, bar.get_y() + bar.get_height() / 2, f"{duration:.0f}分\n({percentage:.1f}%)", va='center', fontsize=9)
+        ax.text(bar.get_width() + 50, bar.get_y() + bar.get_height() / 2, f"{duration:.0f}Min\n({percentage:.1f}%)", va='center', fontsize=9)
     # レジェンドを追加
     handles = [plt.Rectangle((0, 0), 1, 1, color=shared_cmap_large[i]) for i in range(len(project_duration_sum_sorted))]
     labels = project_duration_sum_sorted['Project List'].tolist()
-    ax.legend(handles, labels, loc='upper right', title="プロジェクト", fontsize=9)
-    ax.set_title(f"プロジェクト別記録時間の合計 {start_date}〜{end_date}")
-    ax.set_xlabel("記録時間 (分)")
+    ax.legend(handles, labels, loc='upper right', title="Project", fontsize=9)
+    ax.set_title(f"Total Recorded Time by Project ({start_date}-{end_date})")
+    ax.set_xlabel("Recorded Time (minutes)")
     ax.set_yticks([])  # y軸の目盛りとラベルを非表示
     st.pyplot(fig)
 
@@ -215,7 +226,7 @@ if uploaded_file is not None:
         st.warning("記録された時間が全期間を超えています。データに異常がある可能性があります。")
     else:
         sizes = [total_recorded_duration, total_period_minutes - total_recorded_duration]
-        labels = ['記録された時間', '記録されていない時間']
+        labels = ['Recorded Time', 'Unrecorded Time']
         colors = ['#66b3ff', '#ff9999']
 
         fig, ax = plt.subplots(figsize=(6, 6))
@@ -223,11 +234,11 @@ if uploaded_file is not None:
             sizes, 
             labels=labels, 
             colors=colors, 
-            autopct=lambda p: f'{p:.1f}%\n({p * total_period_minutes / 100:.0f}分)', 
+            autopct=lambda p: f'{p:.1f}%\n({p * total_period_minutes / 100:.0f}Min)', 
             startangle=90, 
             textprops={'fontsize': 10}
         )
-        ax.set_title(f"記録時間の割合 {start_date}〜{end_date}", fontsize=14)
+        ax.set_title(f"Percentage of Recorded Time ({start_date}-{end_date})", fontsize=14)
         ax.axis('equal')  # 円を正円に表示
         st.pyplot(fig)
 

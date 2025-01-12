@@ -4,7 +4,7 @@
 *.pkg
 *.json
 *.xml
-*.csv
+#*.csv
 anaconda3/
 Applications/
 Documents/
