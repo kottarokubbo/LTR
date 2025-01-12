@@ -41,20 +41,16 @@ def extract_start_date(date_str):
     start_dt, _ = extract_times(date_str)
     return start_dt
 
-# デフォルトのCSVファイルを指定
-DEFAULT_CSV_PATH = "LifeTimeReport.csv"  # デフォルトのCSVファイルを配置するパス
-
 # データアップロード
 st.title("LTR Analyzer")
 uploaded_file = st.file_uploader("Upload Your LTR(.csv)", type="csv")
+<<<<<<< HEAD
 
 # データの読み込み
+=======
+>>>>>>> 6225b1c (Update LifeTimeReport.py with new functionality)
 if uploaded_file is not None:
     df = pd.read_csv(uploaded_file)
-    st.write("アップロードされたCSVファイルを使用しています。")
-else:
-    df = pd.read_csv(DEFAULT_CSV_PATH)
-    st.write("デフォルトのCSVファイルを使用しています。")
     
     # データ処理
     df['Duration (Min)'] = df['Date'].apply(calc_duration)
@@ -241,5 +237,3 @@ else:
         ax.set_title(f"Percentage of Recorded Time ({start_date}-{end_date})", fontsize=14)
         ax.axis('equal')  # 円を正円に表示
         st.pyplot(fig)
-
-
