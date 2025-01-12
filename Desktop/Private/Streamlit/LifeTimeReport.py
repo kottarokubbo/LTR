@@ -44,11 +44,8 @@ def extract_start_date(date_str):
 # データアップロード
 st.title("LTR Analyzer")
 uploaded_file = st.file_uploader("Upload Your LTR(.csv)", type="csv")
-<<<<<<< HEAD
 
 # データの読み込み
-=======
->>>>>>> 6225b1c (Update LifeTimeReport.py with new functionality)
 if uploaded_file is not None:
     df = pd.read_csv(uploaded_file)
     
